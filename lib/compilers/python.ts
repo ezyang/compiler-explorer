@@ -47,7 +47,8 @@ export class PythonCompiler extends BaseCompiler {
     }
 
     override async processAsm(result) {
-        const lineRe = /^\s{0,4}(\d+)(.*)/;
+        const lineRe = /INPUTFILE\.py:(\d+)/;
+        const prefixRe = /\[(?:DEBUG|INFO)\] (.*)/;
 
         const bytecodeLines = result.asm.split('\n');
 
@@ -57,19 +58,16 @@ export class PythonCompiler extends BaseCompiler {
 
         for (const line of bytecodeLines) {
             const match = line.match(lineRe);
+            const linematch = line.match(prefixRe);
 
             if (match) {
                 const lineno = parseInt(match[1]);
                 sourceLoc = {line: lineno, file: null};
                 lastLineNo = lineno;
-            } else if (line) {
+            } else if (linematch) {
                 sourceLoc = {line: lastLineNo, file: null};
-            } else {
-                sourceLoc = {line: undefined, file: null};
-                lastLineNo = undefined;
+                bytecodeResult.push({text: linematch[1], source: sourceLoc});
             }
-
-            bytecodeResult.push({text: line, source: sourceLoc});
         }
 
         return {asm: bytecodeResult};

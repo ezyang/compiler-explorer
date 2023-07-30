@@ -1,2 +1,6 @@
-def square(num):
-    return num * num
+import torch
+
+def main(x):
+    return x * x
+
+args = [torch.randn(2, 2)]
